@@ -44,7 +44,7 @@ def generateGraph(filename):
     graphQueue = Queue()
     graph = Graph(startCol, startRow, goalCol, goalRow)
 
-    node = Node(startCol, startRow)
+    node = Node(startCol, startRow, ManhattanDistance(startCol, startRow, goalCol, goalRow))
     graph.addNode(node)
 
     col = startCol
@@ -64,7 +64,7 @@ def generateGraph(filename):
         # Look Down
         if row+1 < BOARDSIZE and Maze[row+1][col] == OPEN or Maze[row+1][col] == GOAL:
             isGoal = Maze[row+1][col] == GOAL
-            downNode = Node(col, row+1, isGoal)
+            downNode = Node(col, row+1, ManhattanDistance(col, row+1, goalCol, goalRow), isGoal)
             graph.addNode(downNode)
             graph.addEdge(node, downNode)
 
@@ -73,7 +73,7 @@ def generateGraph(filename):
         # Look Up
         if row-1 >= 0 and Maze[row-1][col] == OPEN or Maze[row-1][col] == GOAL:
             isGoal = Maze[row-1][col] == GOAL
-            upNode = Node(col, row-1)
+            upNode = Node(col, row-1, ManhattanDistance(col, row-1, goalCol, goalRow), isGoal)
             graph.addNode(upNode)
             graph.addEdge(node, upNode)
 
@@ -82,7 +82,7 @@ def generateGraph(filename):
         # Look Right
         if col+1 < BOARDSIZE and Maze[row][col+1] == OPEN or Maze[row][col+1] == GOAL:
             isGoal = Maze[row][col+1] == GOAL
-            rightNode = Node(col+1, row, isGoal)
+            rightNode = Node(col+1, row, ManhattanDistance(col+1, row, goalCol, goalRow), isGoal)
             graph.addNode(rightNode)
             graph.addEdge(node, rightNode)
 
@@ -91,13 +91,17 @@ def generateGraph(filename):
         # Look left
         if col-1 >= 0 and Maze[row][col-1] == OPEN or Maze[row][col-1] == GOAL:
             isGoal = Maze[row][col-1] == GOAL
-            leftNode = Node(col-1, row, isGoal)
+            leftNode = Node(col-1, row, ManhattanDistance(col-1, row, goalCol, goalRow), isGoal)
             graph.addNode(leftNode)
             graph.addEdge(node, leftNode)
 
             graphQueue.push(leftNode)
 
     return graph
+
+def ManhattanDistance(x1, y1, x2, y2):
+    dist = abs(x1 - x2) + abs(y1 - y2)
+    return dist
 
 class Queue:
     def __init__(self):
@@ -112,6 +116,12 @@ class Queue:
     def isEmpty(self):
         return len(self.list) == 0
 
+    def toList(self):
+        return self.list
+
+    def __len__(self):
+        return len(self.list)
+
 class Stack:
     def __init__(self):
         self.list = []
@@ -125,11 +135,18 @@ class Stack:
     def isEmpty(self):
         return len(self.list) == 0
 
+    def toList(self):
+        return self.list
+
+    def __len__(self):
+        return len(self.list)
+
 class Node:
-    def __init__(self, col, row, goal=False):
+    def __init__(self, col, row, cost, goal=False):
         self.col = col
         self.row = row
         self.goal = goal
+        self.cost = cost
 
     def getCol(self):
         return self.col
@@ -139,6 +156,9 @@ class Node:
 
     def getCoord(self):
         return (self.col, self.row)
+
+    def getCost(self):
+        return self.cost
 
     def isGoal(self):
         return self.goal
@@ -196,6 +216,9 @@ class Graph:
 
     def getRoot(self):
         return self.mNodes[self.startCol,self.startRow]
+
+    def getGoal(self):
+        return self.mNodes[self.goalCol,self.goalRow]
     
     def __str__(self):
         retStr = ""
@@ -206,3 +229,91 @@ class Graph:
                 retStr += str(edge) + "\n"
 
         return retStr
+
+class Result:
+    def __init__(self, path, maxQ, num, found, alg):
+        self.mPath = path
+        self.mMaxQueue = maxQ
+        self.mLength = len(path)
+        self.mFoundGoal = found
+        self.mNumExpanded = num
+        self.mAlgUsed = alg
+
+    def getPath(self):
+        return self.mPath
+
+    def getMaxQueue(self):
+        return self.mMaxQueue
+
+    def getPathLength(self):
+        return self.mLength
+
+    def getAlgUsed(self):
+        return self.mAlgUsed
+
+    def foundGoal(self):
+        return self.mFoundGoal
+
+    def getNumExpanded(self):
+        return self.mNumExpanded
+
+    def pathString(self):
+        pstring = ""
+
+        for node in self.mPath:
+            nodeString = ""
+            if node.isGoal():
+                nodeString = str(node)
+            else:
+                nodeString = str(node) + "->"
+            
+            pstring += nodeString
+
+        return pstring
+
+
+class ProblemScore:
+    def __init__(self, results):
+        self.mResults = results
+        self.mScores = {}
+
+        for result in self.mResults:
+            self.mScores[result.getAlgUsed()] = 0
+
+        self.__compareResults()
+
+    def __compareResults(self):
+        bestExp = sys.maxint
+        bestPath = sys.maxint
+        bestMaxQ = sys.maxint
+
+        for result in self.mResults:
+            if result.getNumExpanded() < bestExp:
+                bestExp = result.getNumExpanded()
+
+            if result.getPathLength() < bestPath:
+                bestPath = result.getPathLength()
+            
+            if result.getMaxQueue() < bestMaxQ:
+                bestMaxQ = result.getMaxQueue()
+
+        for result in self.mResults:
+            name = result.getAlgUsed()
+        
+            if result.foundGoal():
+                self.mScores[name] += 4
+
+            if result.getNumExpanded() == bestExp:
+                self.mScores[name] += 1
+
+            if result.getPathLength() == bestPath:
+                self.mScores[name] += 1
+            
+            if result.getMaxQueue() == bestMaxQ:
+                self.mScores[name] += 1
+
+    def getScore(self, alg):
+        if self.mScores.has_key(alg):
+            return self.mScores[alg]
+        else:
+            return 0
