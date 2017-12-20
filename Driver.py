@@ -51,7 +51,7 @@ def runProblems(numProbs, probFolder, probFile, probExtension):
         scores = ProbScore.GetScores()
         resDict = ProbScore.GetResultDict()
 
-        GA = GeneticAlgorithm(50, scores, resDict)
+        GA = GeneticAlgorithm(100, scores, resDict)
 
         gaRes = GA.PerformAlgorithm()
 
@@ -61,4 +61,4 @@ def runProblems(numProbs, probFolder, probFile, probExtension):
         print ""
 
 
-runProblems(5, "Test_Problems", "prob", "map")
+runProblems(9, "Test_Problems", "prob", "map")

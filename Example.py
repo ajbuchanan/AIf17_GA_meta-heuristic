@@ -2,7 +2,7 @@ from Algorithms import Searcher
 from Utility import *
 from GeneticAlgorithm import *
 
-graph = generateGraph("Test_Problems/prob6.map")
+graph = generateGraph("Test_Problems/prob15.map")
 
 searcher = Searcher(graph)
 res = []

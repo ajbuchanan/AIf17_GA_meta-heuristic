@@ -62,18 +62,15 @@ class GeneticAlgorithm:
 
     def Crossover(self, p1, p2):
         cross1 = randint(0, len(p1)-2)
-        cross2 = randint(cross1, len(p1)-1)
 
         c1 = []
         c2 = []
 
         c1.extend(p1[:cross1])
-        c1.extend(p2[cross1:cross2])
-        c1.extend(p1[cross2:])
+        c1.extend(p2[cross1:])
 
         c2.extend(p2[:cross1])
-        c2.extend(p1[cross1:cross2])
-        c2.extend(p2[cross2:])
+        c2.extend(p1[cross1:])
 
         c1 = self.Mutate(c1)
         c2 = self.Mutate(c2)
