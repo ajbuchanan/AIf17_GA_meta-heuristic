@@ -275,10 +275,14 @@ class Result:
 class ProblemScore:
     def __init__(self, results):
         self.mResults = results
+        self.mResDict = {}
         self.mScores = {}
 
         for result in self.mResults:
             self.mScores[result.getAlgUsed()] = 0
+
+        for res in results:
+            self.mResDict[res.getAlgUsed()] = res
 
         self.__compareResults()
 
@@ -312,8 +316,19 @@ class ProblemScore:
             if result.getMaxQueue() == bestMaxQ:
                 self.mScores[name] += 1
 
+    def printScores(self):
+        for res in self.mResults:
+            alg = res.getAlgUsed()
+            print alg + " got score: " + str(self.mScores[alg])
+
     def getScore(self, alg):
         if self.mScores.has_key(alg):
             return self.mScores[alg]
         else:
             return 0
+
+    def GetScores(self):
+        return self.mScores
+
+    def GetResultDict(self):
+        return self.mResDict

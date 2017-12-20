@@ -2,12 +2,14 @@ from random import *
 from Utility import *
 
 class GeneticAlgorithm:
-    def __init__(self, numGenerations, scores, numAlg):
+    def __init__(self, numGenerations, scores, results):
         self.mNumGens = numGenerations
         self.mAlgScores = scores
-        self.mNumAlgorithms = numAlg
+        self.mNumAlgorithms = len(scores)
+        self.mResults = results
 
-    def createInitalPop(self, numInitPop):
+    def CreateInitalPop(self, numInitPop):
+        print "Creating Inital Population"
         currentPop = []
         for i in range(numInitPop):
             individual = []
@@ -24,10 +26,10 @@ class GeneticAlgorithm:
         return currentPop
 
     def PerformAlgorithm(self):
-        CurrentPopulation = self.createInitalPop(4)
+        print "Starting Algorithm"
+        CurrentPopulation = self.CreateInitalPop(4)
 
         for i in range(self.mNumGens):
-
             children = self.GenerateChildren(CurrentPopulation)
 
             for child in children:
@@ -35,7 +37,7 @@ class GeneticAlgorithm:
 
             CurrentPopulation = self.TrimPopulation(CurrentPopulation)
 
-        return self.GeneticAlgorithmResult(self.getBestIndividuals(CurrentPopulation))
+        return self.GeneticAlgorithmResult(CurrentPopulation)
 
     def GenerateChildren(self, population):
         children = []
@@ -82,7 +84,8 @@ class GeneticAlgorithm:
         for i in range(len(individual)):
             chance = random()
 
-            if chance > 0.05:
+            if chance < 0.05:
+                #print "Mutation!"
                 if individual[i]:
                     individual[i] = False
                 else:
@@ -91,10 +94,121 @@ class GeneticAlgorithm:
         return individual
 
     def TrimPopulation(self, population):
-        return population[:4]
+        retList = []
+        for i in range(self.mNumAlgorithms):
+            bestKey = 0
+            bestScore = 0
+            currentKey = 0
 
-    def getBestIndividuals(self, population):
-        return population[0]
+            for pop in population:
+                score = self.getIndividualsScore(pop)
+                if score > bestScore:
+                    bestScore = score
+                    bestKey = currentKey
+                currentKey += 1
 
-    def GeneticAlgorithmResult(self, individuals):
-        return str(individuals)
+            retList.append(population[bestKey])
+            del population[bestKey]
+
+        return retList
+
+    def getIndividualsScore(self, individual):
+        score = 0.0
+        num = 0
+        if individual[0]:
+            score += self.mAlgScores["AS"]
+            num += 1
+
+        if individual[1]:
+            score += self.mAlgScores["BFS"]
+            num += 1
+
+        if individual[2]:
+            score += self.mAlgScores["DFS"]
+            num += 1
+
+        if individual[3]:
+            score += self.mAlgScores["UCS"]
+            num += 1
+
+        if num > 0:
+            score = score / num
+
+        return score
+
+    def GeneticAlgorithmResult(self, population):
+        individual = self.GetBestOne(population)
+        res = GAResult()
+        if individual[0]:
+            res.addAlgorithm("AS")
+            res.addPath("AS", self.mResults["AS"].getPath())
+
+        if individual[1]:
+            res.addAlgorithm("BFS")
+            res.addPath("BFS", self.mResults["BFS"].getPath())
+
+        if individual[2]:
+            res.addAlgorithm("DFS")
+            res.addPath("DFS", self.mResults["DFS"].getPath())
+
+        if individual[3]:
+            res.addAlgorithm("UCS")
+            res.addPath("UCS", self.mResults["UCS"].getPath())
+
+        return res
+
+    def getNumTrue(self, individual):
+        numTrue = 0
+
+        if individual[0]:
+            numTrue += 1
+            
+        if individual[1]:
+            numTrue += 1
+            
+        if individual[2]:
+            numTrue += 1
+            
+        if individual[3]:
+            numTrue += 1
+
+        return numTrue
+
+    def GetBestOne(self, population):
+        bestScore = 0
+        bestKey = 0
+        bestNumTrue = 0
+        currentKey = 0
+
+        for pop in population:
+            score = self.getIndividualsScore(pop)
+            if score > bestScore:
+                numTrue = self.getNumTrue(pop)
+                if bestScore > 0 and numTrue > bestNumTrue:
+                    bestScore = score
+                    bestKey = currentKey
+                    bestNumTrue = numTrue
+            
+            currentKey += 1
+
+        return population[bestKey]
+
+class GAResult:
+    def __init__(self):
+        self._bestPath = {}
+        self._algorithms = []
+
+    def addAlgorithm(self, alg):
+        self._algorithms.append(alg)
+
+    def addPath(self, alg, path):
+        self._bestPath[alg] = path
+
+    def getPaths(self):
+        return self._bestPath
+
+    def getAlgorithms(self):
+        return self._algorithms
+
+    def printResult(self):
+        print self._algorithms

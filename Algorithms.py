@@ -131,6 +131,7 @@ class Searcher:
         fScore = {}
         numExpanded = 0
         maxQueue = 0
+        foundGoal = False
         currentNode = self.mGraph.getRoot()
         path[currentNode] = currentNode
         goalCol = self.mGraph.getGoal().getCol()
@@ -148,7 +149,7 @@ class Searcher:
                 if fScore.has_key(frontier[i]) and fScore[frontier[i]] < fScoreVal:
                     currentNode = frontier[i]
                     currentIndex = i
-            
+
             del frontier[currentIndex]
             visited.append(currentNode)
 
@@ -171,11 +172,15 @@ class Searcher:
                 path[successor] = currentNode
 
                 if successor.isGoal():
+                    foundGoal = True
                     currentNode = successor
                     break
 
                 gScore[successor] = tempScore
                 fScore[successor] = gScore[successor] + 1
+
+            if foundGoal:
+                break
 
         print "Finished UCS"
         return self.generateResults(path, currentNode, "UCS", maxQueue, numExpanded)

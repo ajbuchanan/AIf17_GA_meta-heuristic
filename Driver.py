@@ -1,44 +1,64 @@
 from Algorithms import Searcher
 from Utility import *
+from GeneticAlgorithm import *
 
+'''
 graph = generateGraph("Test_Problems/prob1.map")
 
 searcher = Searcher(graph)
+res = []
+res.append(searcher.AStarSearch())
 
-res = searcher.AStarSearch()
-print res.pathString()
+res.append(searcher.BreadthFirstSearch())
 
-res = searcher.BreadthFirstSearch()
-print res.pathString()
+res.append(searcher.DepthFirstSearch())
 
-res = searcher.DepthFirstSearch()
-print res.pathString()
+res.append(searcher.UniformCostSearch())
 
-res = searcher.UniformCostSearch()
-print res.pathString()
+ProbScore = ProblemScore(res)
+ProbScore.printScores()
+scores = ProbScore.GetScores()
+resDict = ProbScore.GetResultDict()
 
-#runProblems(30, "Test_Problems", "prob", "map")
+GA = GeneticAlgorithm(50, scores, resDict)
+
+gaRes = GA.PerformAlgorithm()
+
+gaRes.printResult()
+'''
 
 def runProblems(numProbs, probFolder, probFile, probExtension):
     problemGraphs = {}
     problemScores = {}
     for num in range(numProbs):
+        print "Problem: " + str(num+1) + "\n"
+        
         problemGraphs[num+1] = generateGraph(probFolder + "/" + probFile + str(num+1) + "." + probExtension)
 
-        search = Searcher(problemGraphs[num+1])
-        results = []
+        searcher = Searcher(problemGraphs[num+1])
+        res = []
+        res.append(searcher.AStarSearch())
 
-        res = search.AStarSearch()
-        results.append(res)
-        
-        res = search.BreadthFirstSearch()
-        results.append(res)
-        
-        res = search.DepthFirstSearch()
-        results.append(res)
-        
-        res = search.UniformCostSearch()
-        results.append(res)
+        res.append(searcher.BreadthFirstSearch())
 
-        score = ProblemScore(results)
-        problemScores[num+1] = score
+        res.append(searcher.DepthFirstSearch())
+
+        res.append(searcher.UniformCostSearch())
+
+        ProbScore = ProblemScore(res)
+        problemScores[num+1] = ProbScore
+        ProbScore.printScores()
+        scores = ProbScore.GetScores()
+        resDict = ProbScore.GetResultDict()
+
+        GA = GeneticAlgorithm(50, scores, resDict)
+
+        gaRes = GA.PerformAlgorithm()
+
+        print "Results: "
+        gaRes.printResult()
+
+        print ""
+
+
+runProblems(5, "Test_Problems", "prob", "map")
